@@ -320,6 +320,8 @@ out <- transform(out, Name = revalue(Lake, c("B"="Buffalo Pound", "L" = "Last Mo
 modSS <- gam(SS ~ Lake + te(DOY, Year, by = Lake), data = out,
              method = "REML", select = TRUE, family = gaussian(), na.action = na.exclude)
 
+summary(modSS)
+
 #Canthaxanthin surface model; Fig. S5 ####
 df <- read.csv("./data/quappelle-lake-time-series-data.csv")
 df <- transform(df, Lake = factor(Lake, levels = c("B", "L", "WW", "P","K", "C")))
@@ -329,14 +331,20 @@ modCanth <- gam(Surface.canthaxanthin  ~ Lake + ti(Day.of.Year) + ti(Year) +
                     ti(Day.of.Year, by = Lake) + ti(Year, by = Lake), data = df,
                 method = "REML", select = TRUE, family = tw(), na.action = na.exclude)
 
+summary(modCanth)
+
 #Total dissolved nitrogen; Fig. S6####
 modTDN <- gam(Total.Dissolved.Nitrogen ~ Lake + ti(Day.of.Year) + ti(Year) +
                   ti(Day.of.Year, Year, by = Lake) + ti(Day.of.Year, Year) +
                   ti(Day.of.Year, by = Lake) + ti(Year, by = Lake), data = df,
               method = "REML", select = TRUE, family = Gamma())
 
+summary(modTDN)
+
 #Total dissolved phosphorus; Fig. S7####
 modTDP <- gam(Total.Dissolved.Phosphorus  ~ Lake + ti(Day.of.Year) + ti(Year) +
                   ti(Day.of.Year, Year, by = Lake) + ti(Day.of.Year, Year) +
                   ti(Day.of.Year, by = Lake) + ti(Year, by = Lake), data = df,
               method = "REML", select = TRUE, family = Gamma())
+
+summary(modTDP)
