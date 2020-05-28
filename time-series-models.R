@@ -12,8 +12,8 @@ library('cowplot')
 theme_set(theme_bw())
 
 ## load data
-mc <- read_csv("./data/microcystin-data.csv")
-bg <- read_csv("./data/other-variables.csv")
+mc <- read_csv("./data/quappelle-lake-microcycstin-time-series.csv")
+bg <- read_csv("./data/quappelle-lake-time-series-data.csv")
 
 lake_levels <- c("B", "L", "WW", "P", "K", "C")
 
