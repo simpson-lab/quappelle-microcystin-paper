@@ -8,7 +8,7 @@ Qu'Appelle LTER lakes.
 The manuscript is accepted for publication at Limnology and Oceanography
 Letters.
 
-The code is licensed under the MIT License; see [LICENCE.md](LICENCE.md)
+The code is licensed under the MIT License; see [LICENSE.md](LICENSE.md)
 
 If you use the code or the data, please cite this source (see the DOI above) and
 that of the paper (Hayes et al in press; DOI in due course).
