@@ -33,32 +33,32 @@ mc <- transform(mc, olake = ordered(lake))
 ## Refit?
 CORES <- 4
 
-m1 <- brm(micro_censored | cens(censored) ~ lake + t2(DOY, cYear, by = lake),
+m1 <- brm(microcystin | cens(censored) ~ lake + t2(DOY, cYear, by = lake),
           data = mc, family = Gamma(link = "log"),
           warmup = 1000, iter = 3000, chains = 4, cores = CORES,
           control = list(adapt_delta = 0.95))
 ms1 <- marginal_smooths(m1)
 
-m2 <- brm(micro_censored | cens(censored) ~ lake + t2(DOY, cYear, by = lake, k = c(10,10)),
+m2 <- brm(microcystin | cens(censored) ~ lake + t2(DOY, cYear, by = lake, k = c(10,10)),
           data = mc, family = Gamma(link = "log"),
           warmup = 1000, iter = 3000, chains = 4, cores = CORES,
           control = list(adapt_delta = 0.99, max_treedepth = 50))
 ms2 <- marginal_smooths(m2)
 
-m3 <- brm(micro_censored | cens(censored) ~ lake + t2(DOY, cYear, k = c(10,10)),
+m3 <- brm(microcystin | cens(censored) ~ lake + t2(DOY, cYear, k = c(10,10)),
           data = mc, family = Gamma(link = "log"),
           warmup = 1000, iter = 3000, chains = 4, cores = CORES,
           control = list(adapt_delta = 0.99, max_treedepth = 50))
 ms3 <- marginal_smooths(m3)
 
-m4 <- brm(micro_censored | cens(censored) ~ lake + t2(DOY, cYear) +
+m4 <- brm(microcystin | cens(censored) ~ lake + t2(DOY, cYear) +
               s(DOY, by = lake, m = 1) + s(cYear, by = lake, m = 1),
           data = mc, family = Gamma(link = "log"),
           warmup = 1000, iter = 3000, chains = 4, cores = CORES,
           control = list(adapt_delta = 0.99, max_treedepth = 50))
 ms4 <- marginal_smooths(m4)
 
-m5 <- brm(micro_censored | cens(censored) ~ olake + t2(DOY, cYear) +
+m5 <- brm(microcystin | cens(censored) ~ olake + t2(DOY, cYear) +
               s(DOY, by = olake) + s(cYear, by = olake),
           data = mc, family = Gamma(link = "log"),
           warmup = 1000, iter = 3000, chains = 4, cores = CORES,
@@ -95,7 +95,7 @@ p3 <- posterior_predict(m3)
 p4 <- posterior_predict(m4)
 p5 <- posterior_predict(m5)
 
-fitResponse <- with(mc, micro_censored)
+fitResponse <- with(mc, microcystin)
 fitResponse <- fitResponse[!is.na(fitResponse)]
 take <- fitResponse >= 0.16
 ppc_dens_overlay(fitResponse[take], p4[sample(nrow(p4), 50), take]) + theme_bw() + scale_x_log10()
@@ -124,8 +124,8 @@ p1 <- ggplot(newd4, aes(x = DOY, y = mean, colour = year, group = year)) +
 p1
 
 p2 <- ggplot(newd4, aes(x = DOY, y = mean, colour = year, group = year)) +
-    geom_point(subset(mc, micro_censored >= 0.16),
-               mapping = aes(x = DOY, y = micro_censored, colour = year, group = year),
+    geom_point(subset(mc, microcystin >= 0.16),
+               mapping = aes(x = DOY, y = microcystin, colour = year, group = year),
                inherit.aes = FALSE) +
     geom_line() +
     facet_wrap(~ lake, scales = "free_y") +
@@ -137,7 +137,7 @@ p2
 ## posterior predictive checks
 m4.cms <- data.frame(mc = c(vapply(as.data.frame(p4), mean, numeric(1)),
                             vapply(as.data.frame(p4), median, numeric(1)),
-                            dfd[['micro_censored']]),
+                            dfd[['microcystin']]),
                      dataset = rep(c('est (mean)','Posterior Median','Observed'),
                                    each = nrow(dfd)))
 brks <- c(0, 0.16, seq(0.26, ceiling(max(m4.cms[['mc']])), by = 0.2))
@@ -153,7 +153,7 @@ bin_fun <- function(x, brks) {
 result <- apply(p4, 1L, bin_fun, brks = brks)
 out <- apply(result, 1L, quantile, probs = c(0.05, 0.5, 0.95))
 ## brks_obs <- c(0, 0.16, seq(0.36, ceiling(max(m4.cms[['mc']])), by = 0.2))
-tab_df <- data.frame(obs = unname(as.vector(table(cut(dfd[['micro_censored']], brks)))[1:191]),
+tab_df <- data.frame(obs = unname(as.vector(table(cut(dfd[['microcystin']], brks)))[1:191]),
                      upper  = unname(out[3, 1:191]),
                      median = unname(out[2, 1:191]),
                      lower  = unname(out[1, 1:191]),
@@ -211,7 +211,7 @@ ggsave('posterior-predictive-check-freqpoly.pdf')
 ##
 ## Number of censored values first
 cens_pp <- data.frame(prop_cens = c(rowMeans(p4 < 0.16)))
-cens_obs <- mean(dfd[['micro_censored']] < 0.16)
+cens_obs <- mean(dfd[['microcystin']] < 0.16)
 
 pp_cens_plt <- ggplot(cens_pp, aes(x = prop_cens)) +
     geom_histogram(bins = 30, colour = '#33bbee', fill = '#33bbee') +
@@ -229,12 +229,12 @@ health_pp <- data.frame(prop = c(## rowMeans(p4 <  0.16),
                         threshold = ordered(rep(levs, each = nrow(p4)),
                                             levels = levs))
 
-health_obs <- with(dfd, data.frame(prop = c(## mean(micro_censored <   0.16),
-                                            mean(micro_censored >  0.3),
-                                            mean(micro_censored >  1.0),
-                                            mean(micro_censored >  1.6),
-                                            mean(micro_censored > 10.0),
-                                            mean(micro_censored > 20.0)),
+health_obs <- with(dfd, data.frame(prop = c(## mean(microcystin <   0.16),
+                                            mean(microcystin >  0.3),
+                                            mean(microcystin >  1.0),
+                                            mean(microcystin >  1.6),
+                                            mean(microcystin > 10.0),
+                                            mean(microcystin > 20.0)),
                                    threshold = ordered(levs, levels = levs)))
 
 pp_health_plt <- ggplot(health_pp, aes(x = prop)) +
@@ -262,7 +262,7 @@ siteVec <- c('Buffalo Pound','Last Mountain','Wascana','Pasqua','Katepwa','Crook
 names(siteVec) <- levels(fitVals[['lake']])
 quapelle_labeller <- as_labeller(siteVec)
 
-fit_vs_obs_plt <- ggplot(fitVals, aes(x = fitted, y = micro_censored,
+fit_vs_obs_plt <- ggplot(fitVals, aes(x = fitted, y = microcystin,
                                       colour = as.logical(abs(censored)))) +
     geom_point(alpha = 0.3) +
     geom_abline(intercept = 0, slope = 1, col = 'black', alpha = 0.3) +
@@ -333,8 +333,8 @@ post_pred_plt
 ## Plot posterior predictions and data ------------------------------------------
 post_pred_data_plt <-
     ggplot(newd4, aes(x = DOY, y = mean, colour = year, group = year)) +
-    geom_point(subset(dfd, micro_censored >= 0.16),
-               mapping = aes(x = DOY, y = micro_censored, colour = year, group = year),
+    geom_point(subset(dfd, microcystin >= 0.16),
+               mapping = aes(x = DOY, y = microcystin, colour = year, group = year),
                inherit.aes = FALSE) +
     geom_line() +
     facet_wrap(~ lake, scales = "free_y") +
@@ -369,8 +369,8 @@ fitnew <- cbind(newd, as.data.frame(fitnew))
 
 post_mean_fitted_plt <-
     ggplot(fitnew, aes(x = DOY, y = Estimate, colour = year, group = year)) +
-    geom_point(subset(dfd, micro_censored >= 0.16),
-               mapping = aes(x = DOY, y = micro_censored, colour = year, group = year),
+    geom_point(subset(dfd, microcystin >= 0.16),
+               mapping = aes(x = DOY, y = microcystin, colour = year, group = year),
                inherit.aes = FALSE) +
     geom_line() +
     facet_wrap(~ lake, scales = "free_y") +
